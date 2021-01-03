@@ -56,7 +56,7 @@ describe('Oracle', () => {
   let Cash: ContractFactory;
   let Share: ContractFactory;
   let Oracle: ContractFactory;
-  let MockDAI: ContractFactory;
+  let MockWBTC: ContractFactory;
 
   // uniswap
   let Factory = new ContractFactory(
@@ -72,7 +72,7 @@ describe('Oracle', () => {
     Cash = await ethers.getContractFactory('Cash');
     Share = await ethers.getContractFactory('Share');
     Oracle = await ethers.getContractFactory('Oracle');
-    MockDAI = await ethers.getContractFactory('MockDai');
+    MockWBTC = await ethers.getContractFactory('MockWBTC');
   });
 
   let factory: Contract;
@@ -86,29 +86,29 @@ describe('Oracle', () => {
     );
   });
 
-  let dai: Contract;
+  let wbtc: Contract;
   let cash: Contract;
   let share: Contract;
   let oracle: Contract;
   let oracleStartTime: BigNumber;
 
   beforeEach('deploy contracts', async () => {
-    dai = await MockDAI.connect(operator).deploy();
+    wbtc = await MockWBTC.connect(operator).deploy();
     cash = await Cash.connect(operator).deploy();
     share = await Share.connect(operator).deploy();
 
-    await dai.connect(operator).mint(operator.address, ETH.mul(2));
-    await dai.connect(operator).approve(router.address, ETH.mul(2));
+    await wbtc.connect(operator).mint(operator.address, ETH.mul(2));
+    await wbtc.connect(operator).approve(router.address, ETH.mul(2));
     await cash.connect(operator).mint(operator.address, ETH);
     await cash.connect(operator).approve(router.address, ETH);
 
-    await addLiquidity(provider, operator, router, cash, dai, ETH);
+    await addLiquidity(provider, operator, router, cash, wbtc, ETH);
 
     oracleStartTime = BigNumber.from(await latestBlocktime(provider)).add(DAY);
     oracle = await Oracle.connect(operator).deploy(
       factory.address,
       cash.address,
-      dai.address,
+      wbtc.address,
       DAY,
       oracleStartTime
     );

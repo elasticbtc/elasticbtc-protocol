@@ -10,7 +10,7 @@ pragma solidity ^0.6.0;
 /___/ \_, //_//_/\__//_//_/\__/ \__//_/ /_\_\
      /___/
 
-* Synthetix: BASISCASHRewards.sol
+* Synthetix: elasticBTCRewards.sol
 *
 * Docs: https://docs.synthetix.io/
 *
@@ -62,38 +62,38 @@ import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 import '../interfaces/IRewardDistributionRecipient.sol';
 
-contract USDTWrapper {
+contract BACWrapper {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 public usdt;
+    IERC20 public bac;
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
 
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() public virtual view returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address account) public view returns (uint256) {
+    function balanceOf(address account) public virtual view returns (uint256) {
         return _balances[account];
     }
 
     function stake(uint256 amount) public virtual {
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
-        usdt.safeTransferFrom(msg.sender, address(this), amount);
+        bac.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     function withdraw(uint256 amount) public virtual {
         _totalSupply = _totalSupply.sub(amount);
         _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        usdt.safeTransfer(msg.sender, amount);
+        bac.safeTransfer(msg.sender, amount);
     }
 }
 
-contract BACUSDTPool is USDTWrapper, IRewardDistributionRecipient {
-    IERC20 public basisCash;
+contract EBTCBACPool is BACWrapper, IRewardDistributionRecipient {
+    IERC20 public elasticBTC;
     uint256 public DURATION = 5 days;
 
     uint256 public starttime;
@@ -111,17 +111,17 @@ contract BACUSDTPool is USDTWrapper, IRewardDistributionRecipient {
     event RewardPaid(address indexed user, uint256 reward);
 
     constructor(
-        address basisCash_,
-        address usdt_,
+        address elasticBTC_,
+        address bac_,
         uint256 starttime_
     ) public {
-        basisCash = IERC20(basisCash_);
-        usdt = IERC20(usdt_);
+        elasticBTC = IERC20(elasticBTC_);
+        bac = IERC20(bac_);
         starttime = starttime_;
     }
 
     modifier checkStart() {
-        require(block.timestamp >= starttime, 'BACUSDTPool: not start');
+        require(block.timestamp >= starttime, 'EBTCBACPool: not start');
         _;
     }
 
@@ -168,11 +168,11 @@ contract BACUSDTPool is USDTWrapper, IRewardDistributionRecipient {
         updateReward(msg.sender)
         checkStart
     {
-        require(amount > 0, 'BACUSDTPool: Cannot stake 0');
+        require(amount > 0, 'EBTCBACPool: Cannot stake 0');
         uint256 newDeposit = deposits[msg.sender].add(amount);
         require(
-            newDeposit <= 20000e6,
-            'BACUSDTPool: deposit amount exceeds maximum 20000'
+            newDeposit <= 20000e18,
+            'EBTCBACPool: deposit amount exceeds maximum 20000'
         );
         deposits[msg.sender] = newDeposit;
         super.stake(amount);
@@ -185,7 +185,7 @@ contract BACUSDTPool is USDTWrapper, IRewardDistributionRecipient {
         updateReward(msg.sender)
         checkStart
     {
-        require(amount > 0, 'BACUSDTPool: Cannot withdraw 0');
+        require(amount > 0, 'EBTCBACPool: Cannot withdraw 0');
         deposits[msg.sender] = deposits[msg.sender].sub(amount);
         super.withdraw(amount);
         emit Withdrawn(msg.sender, amount);
@@ -200,7 +200,7 @@ contract BACUSDTPool is USDTWrapper, IRewardDistributionRecipient {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            basisCash.safeTransfer(msg.sender, reward);
+            elasticBTC.safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }

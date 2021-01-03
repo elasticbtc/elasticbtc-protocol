@@ -14,23 +14,23 @@ contract InitialShareDistributor is IDistributor {
     bool public once = true;
 
     IERC20 public share;
-    IRewardDistributionRecipient public daibacLPPool;
-    uint256 public daibacInitialBalance;
-    IRewardDistributionRecipient public daibasLPPool;
-    uint256 public daibasInitialBalance;
+    IRewardDistributionRecipient public wBTCeBTCLPPool;
+    uint256 public wBTCeBTCInitialBalance;
+    IRewardDistributionRecipient public wBTCEBSLPPool;
+    uint256 public wBTCEBSInitialBalance;
 
     constructor(
         IERC20 _share,
-        IRewardDistributionRecipient _daibacLPPool,
-        uint256 _daibacInitialBalance,
-        IRewardDistributionRecipient _daibasLPPool,
-        uint256 _daibasInitialBalance
+        IRewardDistributionRecipient _wBTCeBTCLPPool,
+        uint256 _wBTCeBTCInitialBalance,
+        IRewardDistributionRecipient _wBTCEBSLPPool,
+        uint256 _wBTCEBSInitialBalance
     ) public {
         share = _share;
-        daibacLPPool = _daibacLPPool;
-        daibacInitialBalance = _daibacInitialBalance;
-        daibasLPPool = _daibasLPPool;
-        daibasInitialBalance = _daibasInitialBalance;
+        wBTCeBTCLPPool = _wBTCeBTCLPPool;
+        wBTCeBTCInitialBalance = _wBTCeBTCInitialBalance;
+        wBTCEBSLPPool = _wBTCEBSLPPool;
+        wBTCEBSInitialBalance = _wBTCEBSInitialBalance;
     }
 
     function distribute() public override {
@@ -39,13 +39,13 @@ contract InitialShareDistributor is IDistributor {
             'InitialShareDistributor: you cannot run this function twice'
         );
 
-        share.transfer(address(daibacLPPool), daibacInitialBalance);
-        daibacLPPool.notifyRewardAmount(daibacInitialBalance);
-        emit Distributed(address(daibacLPPool), daibacInitialBalance);
+        share.transfer(address(wBTCeBTCLPPool), wBTCeBTCInitialBalance);
+        wBTCeBTCLPPool.notifyRewardAmount(wBTCeBTCInitialBalance);
+        emit Distributed(address(wBTCeBTCLPPool), wBTCeBTCInitialBalance);
 
-        share.transfer(address(daibasLPPool), daibasInitialBalance);
-        daibasLPPool.notifyRewardAmount(daibasInitialBalance);
-        emit Distributed(address(daibasLPPool), daibasInitialBalance);
+        share.transfer(address(wBTCEBSLPPool), wBTCEBSInitialBalance);
+        wBTCEBSLPPool.notifyRewardAmount(wBTCEBSInitialBalance);
+        emit Distributed(address(wBTCEBSLPPool), wBTCEBSInitialBalance);
 
         once = false;
     }

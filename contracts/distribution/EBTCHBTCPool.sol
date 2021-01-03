@@ -10,7 +10,7 @@ pragma solidity ^0.6.0;
 /___/ \_, //_//_/\__//_//_/\__/ \__//_/ /_\_\
      /___/
 
-* Synthetix: BASISCASHRewards.sol
+* Synthetix: elasticBTCRewards.sol
 *
 * Docs: https://docs.synthetix.io/
 *
@@ -62,11 +62,11 @@ import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 import '../interfaces/IRewardDistributionRecipient.sol';
 
-contract yCRVWrapper {
+contract HBTCWrapper {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 public ycrv;
+    IERC20 public hbtc;
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
@@ -82,18 +82,18 @@ contract yCRVWrapper {
     function stake(uint256 amount) public virtual {
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
-        ycrv.safeTransferFrom(msg.sender, address(this), amount);
+        hbtc.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     function withdraw(uint256 amount) public virtual {
         _totalSupply = _totalSupply.sub(amount);
         _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        ycrv.safeTransfer(msg.sender, amount);
+        hbtc.safeTransfer(msg.sender, amount);
     }
 }
 
-contract BACyCRVPool is yCRVWrapper, IRewardDistributionRecipient {
-    IERC20 public basisCash;
+contract EBTCHBTCPool is HBTCWrapper, IRewardDistributionRecipient {
+    IERC20 public elasticBTC;
     uint256 public DURATION = 5 days;
 
     uint256 public starttime;
@@ -111,17 +111,17 @@ contract BACyCRVPool is yCRVWrapper, IRewardDistributionRecipient {
     event RewardPaid(address indexed user, uint256 reward);
 
     constructor(
-        address basisCash_,
-        address ycrv_,
+        address elasticBTC_,
+        address hbtc_,
         uint256 starttime_
     ) public {
-        basisCash = IERC20(basisCash_);
-        ycrv = IERC20(ycrv_);
+        elasticBTC = IERC20(elasticBTC_);
+        hbtc = IERC20(hbtc_);
         starttime = starttime_;
     }
 
     modifier checkStart() {
-        require(block.timestamp >= starttime, 'BACyCRVPool: not start');
+        require(block.timestamp >= starttime, 'EBTCHBTCPool: not start');
         _;
     }
 
@@ -168,11 +168,11 @@ contract BACyCRVPool is yCRVWrapper, IRewardDistributionRecipient {
         updateReward(msg.sender)
         checkStart
     {
-        require(amount > 0, 'BACyCRVPool: Cannot stake 0');
+        require(amount > 0, 'EBTCHBTCPool: Cannot stake 0');
         uint256 newDeposit = deposits[msg.sender].add(amount);
         require(
             newDeposit <= 20000e18,
-            'BACyCRVPool: deposit amount exceeds maximum 20000'
+            'EBTCHBTCPool: deposit amount exceeds maximum 20000'
         );
         deposits[msg.sender] = newDeposit;
         super.stake(amount);
@@ -185,7 +185,7 @@ contract BACyCRVPool is yCRVWrapper, IRewardDistributionRecipient {
         updateReward(msg.sender)
         checkStart
     {
-        require(amount > 0, 'BACyCRVPool: Cannot withdraw 0');
+        require(amount > 0, 'EBTCHBTCPool: Cannot withdraw 0');
         deposits[msg.sender] = deposits[msg.sender].sub(amount);
         super.withdraw(amount);
         emit Withdrawn(msg.sender, amount);
@@ -200,7 +200,7 @@ contract BACyCRVPool is yCRVWrapper, IRewardDistributionRecipient {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            basisCash.safeTransfer(msg.sender, reward);
+            elasticBTC.safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }

@@ -1,10 +1,11 @@
 pragma solidity ^0.6.0;
 
-import '../distribution/BACDAIPool.sol';
-import '../distribution/BACSUSDPool.sol';
-import '../distribution/BACUSDCPool.sol';
-import '../distribution/BACUSDTPool.sol';
-import '../distribution/BACyCRVPool.sol';
+import '../distribution/EBTCDAIPool.sol';
+import '../distribution/EBTCSBTCPool.sol';
+import '../distribution/EBTCBADGERPool.sol';
+import '../distribution/EBTCRenBTCPool.sol';
+import '../distribution/EBTCBACPool.sol';
+import '../distribution/EBTCHBTCPool.sol';
 import '../interfaces/IDistributor.sol';
 
 contract InitialCashDistributor is IDistributor {

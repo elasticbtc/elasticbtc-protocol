@@ -12,3 +12,9 @@ truffle-config.js
 
 *.log
 !deployments/*.log
+development.json
+*.development.json
+
+contracts/uniswap-lib/
+contracts/uniswap-v2-core/
+contracts/uniswap-v2-periphery/

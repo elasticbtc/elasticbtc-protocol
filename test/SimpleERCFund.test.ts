@@ -12,7 +12,8 @@ import { encodeParameters } from '../scripts/utils';
 chai.use(solidity);
 
 const DAY = 86400;
-const ETH = utils.parseEther('1');
+// const ETH = utils.parseEther('1');
+const WBTC = BigNumber.from('100000000'); // 10 ** 8
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
 async function latestBlocktime(provider: Provider): Promise<number> {
@@ -30,12 +31,12 @@ describe('SimpleERCFund', () => {
   });
 
   let Fund: ContractFactory;
-  let MockDAI: ContractFactory;
+  let MockWBTC: ContractFactory;
   let Timelock: ContractFactory;
 
   before('fetch contract factories', async () => {
     Fund = await ethers.getContractFactory('SimpleERCFund');
-    MockDAI = await ethers.getContractFactory('MockDai');
+    MockWBTC = await ethers.getContractFactory('MockWBTC');
     Timelock = await ethers.getContractFactory('Timelock');
   });
 
@@ -44,14 +45,14 @@ describe('SimpleERCFund', () => {
 
   beforeEach('deploy contract', async () => {
     fund = await Fund.connect(operator).deploy();
-    token = await MockDAI.connect(operator).deploy();
+    token = await MockWBTC.connect(operator).deploy();
   });
 
   describe('with timelock', () => {
     let timelock: Contract;
 
     beforeEach('deploy timelock', async () => {
-      await token.connect(operator).mint(fund.address, utils.parseEther('100'));
+      await token.connect(operator).mint(fund.address, WBTC.mul('100'));
       timelock = await Timelock.connect(operator).deploy(
         operator.address,
         2 * DAY
@@ -66,7 +67,7 @@ describe('SimpleERCFund', () => {
       const data = encodeParameters(
         ethers,
         ['address', 'uint256', 'address', 'string'],
-        [token.address, utils.parseEther('100'), operator.address, 'TEST']
+        [token.address, WBTC.mul('100'), operator.address, 'TEST']
       );
       const calldata = [fund.address, 0, signature, data, eta];
       const txHash = ethers.utils.keccak256(
@@ -97,9 +98,7 @@ describe('SimpleERCFund', () => {
           'TEST'
         );
 
-      expect(await token.balanceOf(operator.address)).to.eq(
-        utils.parseEther('10100')
-      );
+      expect(await token.balanceOf(operator.address)).to.eq(WBTC.mul('10100'));
     });
   });
 });

@@ -10,7 +10,7 @@ pragma solidity ^0.6.0;
 /___/ \_, //_//_/\__//_//_/\__/ \__//_/ /_\_\
      /___/
 
-* Synthetix: BASISCASHRewards.sol
+* Synthetix: elasticBTCRewards.sol
 *
 * Docs: https://docs.synthetix.io/
 *
@@ -62,11 +62,11 @@ import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 import '../interfaces/IRewardDistributionRecipient.sol';
 
-contract SUSDWrapper {
+contract RenBTCWrapper {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 public SUSD;
+    IERC20 public renBTC;
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
@@ -82,18 +82,18 @@ contract SUSDWrapper {
     function stake(uint256 amount) public virtual {
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
-        SUSD.safeTransferFrom(msg.sender, address(this), amount);
+        renBTC.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     function withdraw(uint256 amount) public virtual {
         _totalSupply = _totalSupply.sub(amount);
         _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        SUSD.safeTransfer(msg.sender, amount);
+        renBTC.safeTransfer(msg.sender, amount);
     }
 }
 
-contract BACSUSDPool is SUSDWrapper, IRewardDistributionRecipient {
-    IERC20 public basisCash;
+contract EBTCRenBTCPool is RenBTCWrapper, IRewardDistributionRecipient {
+    IERC20 public elasticBTC;
     uint256 public DURATION = 5 days;
 
     uint256 public starttime;
@@ -111,17 +111,17 @@ contract BACSUSDPool is SUSDWrapper, IRewardDistributionRecipient {
     event RewardPaid(address indexed user, uint256 reward);
 
     constructor(
-        address basisCash_,
-        address susd_,
+        address elasticBTC_,
+        address renBTC_,
         uint256 starttime_
     ) public {
-        basisCash = IERC20(basisCash_);
-        SUSD = IERC20(susd_);
+        elasticBTC = IERC20(elasticBTC_);
+        renBTC = IERC20(renBTC_);
         starttime = starttime_;
     }
 
     modifier checkStart() {
-        require(block.timestamp >= starttime, 'BACSUSDPool: not start');
+        require(block.timestamp >= starttime, 'EBTCRenBTCPool: not start');
         _;
     }
 
@@ -168,11 +168,11 @@ contract BACSUSDPool is SUSDWrapper, IRewardDistributionRecipient {
         updateReward(msg.sender)
         checkStart
     {
-        require(amount > 0, 'BACSUSDPool: Cannot stake 0');
+        require(amount > 0, 'EBTCRenBTCPool: Cannot stake 0');
         uint256 newDeposit = deposits[msg.sender].add(amount);
         require(
-            newDeposit <= 20000e18,
-            'BACSUSDPool: deposit amount exceeds maximum 20000'
+            newDeposit <= 20000e6,
+            'EBTCRenBTCPool: deposit amount exceeds maximum 20000'
         );
         deposits[msg.sender] = newDeposit;
         super.stake(amount);
@@ -185,7 +185,7 @@ contract BACSUSDPool is SUSDWrapper, IRewardDistributionRecipient {
         updateReward(msg.sender)
         checkStart
     {
-        require(amount > 0, 'BACSUSDPool: Cannot withdraw 0');
+        require(amount > 0, 'EBTCRenBTCPool: Cannot withdraw 0');
         deposits[msg.sender] = deposits[msg.sender].sub(amount);
         super.withdraw(amount);
         emit Withdrawn(msg.sender, amount);
@@ -200,7 +200,7 @@ contract BACSUSDPool is SUSDWrapper, IRewardDistributionRecipient {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            basisCash.safeTransfer(msg.sender, reward);
+            elasticBTC.safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }

@@ -1,28 +1,32 @@
 // https://docs.basis.cash/mechanisms/yield-farming
-const INITIAL_BAC_FOR_POOLS = 50000;
-const INITIAL_BAS_FOR_DAI_BAC = 750000;
-const INITIAL_BAS_FOR_DAI_BAS = 250000;
+const INITIAL_EBTC_FOR_POOLS = 2;
+const INITIAL_EBS_FOR_WBTC_EBTC = 25;
+const INITIAL_EBS_FOR_WBTC_EBS = 8;
 
 const POOL_START_DATE = Date.parse('2020-11-30T00:00:00Z') / 1000;
 
-const bacPools = [
-  { contractName: 'BACDAIPool', token: 'DAI' },
-  { contractName: 'BACSUSDPool', token: 'SUSD' },
-  { contractName: 'BACUSDCPool', token: 'USDC' },
-  { contractName: 'BACUSDTPool', token: 'USDT' },
-  { contractName: 'BACyCRVPool', token: 'yCRV' },
+const ebtcPools = [
+  { contractName: 'EBTCDAIPool', token: 'DAI' },
+  { contractName: 'EBTCSBTCPool', token: 'SBTC' },
+  { contractName: 'EBTCBADGERPool', token: 'BADGER' },
+  { contractName: 'EBTCRenBTCPool', token: 'RenBTC' },
+  { contractName: 'EBTCBACPool', token: 'BAC' },
+  { contractName: 'EBTCHBTCPool', token: 'HBTC' },
 ];
 
-const basPools = {
-  DAIBAC: { contractName: 'DAIBACLPTokenSharePool', token: 'DAI_BAC-LPv2' },
-  DAIBAS: { contractName: 'DAIBASLPTokenSharePool', token: 'DAI_BAS-LPv2' },
-}
+const ebsPools = {
+  WBTCEBTC: {
+    contractName: 'WBTCEBTCLPTokenSharePool',
+    token: 'WBTC_EBTC-LPv2',
+  },
+  WBTCEBS: { contractName: 'WBTCEBSLPTokenSharePool', token: 'WBTC_EBS-LPv2' },
+};
 
 module.exports = {
   POOL_START_DATE,
-  INITIAL_BAC_FOR_POOLS,
-  INITIAL_BAS_FOR_DAI_BAC,
-  INITIAL_BAS_FOR_DAI_BAS,
-  bacPools,
-  basPools,
+  INITIAL_EBTC_FOR_POOLS,
+  INITIAL_EBS_FOR_WBTC_EBTC,
+  INITIAL_EBS_FOR_WBTC_EBS,
+  ebtcPools,
+  ebsPools,
 };

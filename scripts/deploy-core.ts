@@ -2,13 +2,15 @@ import { network, ethers } from 'hardhat';
 import { ParamType, keccak256 } from 'ethers/lib/utils';
 
 import {
-  DAI,
+  WBTC,
   ORACLE_START_DATE,
   TREASURY_START_DATE,
   UNI_FACTORY,
 } from '../deploy.config';
 import OLD from '../deployments/4.json';
 import { encodeParameters, wait } from './utils';
+
+const DEV_FUND_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const MINUTE = 60;
 const HOUR = 60 * MINUTE;
@@ -68,7 +70,7 @@ async function main() {
   const bondOracle = await Oracle.connect(operator).deploy(
     UNI_FACTORY,
     cash.address,
-    DAI,
+    WBTC,
     HOUR,
     ORACLE_START_DATE,
     override
@@ -98,6 +100,7 @@ async function main() {
     seigniorageOracle.address,
     boardroom.address,
     simpleFund.address,
+    DEV_FUND_ADDRESS,
     TREASURY_START_DATE,
     override
   );

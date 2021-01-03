@@ -1,7 +1,7 @@
 const {
-  basPools,
-  INITIAL_BAS_FOR_DAI_BAC,
-  INITIAL_BAS_FOR_DAI_BAS,
+  ebsPools,
+  INITIAL_EBS_FOR_WBTC_EBTC,
+  INITIAL_EBS_FOR_WBTC_EBS,
 } = require('./pools');
 
 // Pools
@@ -13,31 +13,39 @@ const InitialShareDistributor = artifacts.require('InitialShareDistributor');
 
 async function migration(deployer, network, accounts) {
   const unit = web3.utils.toBN(10 ** 18);
-  const totalBalanceForDAIBAC = unit.muln(INITIAL_BAS_FOR_DAI_BAC)
-  const totalBalanceForDAIBAS = unit.muln(INITIAL_BAS_FOR_DAI_BAS)
-  const totalBalance = totalBalanceForDAIBAC.add(totalBalanceForDAIBAS);
+  const totalBalanceForWBTCEBTC = unit.muln(INITIAL_EBS_FOR_WBTC_EBTC);
+  const totalBalanceForWBTCEBS = unit.muln(INITIAL_EBS_FOR_WBTC_EBS);
+  const totalBalance = totalBalanceForWBTCEBTC.add(totalBalanceForWBTCEBS);
 
   const share = await Share.deployed();
 
-  const lpPoolDAIBAC = artifacts.require(basPools.DAIBAC.contractName);
-  const lpPoolDAIBAS = artifacts.require(basPools.DAIBAS.contractName);
+  const lpPoolWBTCEBTC = artifacts.require(ebsPools.WBTCEBTC.contractName);
+  const lpPoolWBTCEBS = artifacts.require(ebsPools.WBTCEBS.contractName);
 
   await deployer.deploy(
     InitialShareDistributor,
     share.address,
-    lpPoolDAIBAC.address,
-    totalBalanceForDAIBAC.toString(),
-    lpPoolDAIBAS.address,
-    totalBalanceForDAIBAS.toString(),
+    lpPoolWBTCEBTC.address,
+    totalBalanceForWBTCEBTC.toString(),
+    lpPoolWBTCEBS.address,
+    totalBalanceForWBTCEBS.toString()
   );
   const distributor = await InitialShareDistributor.deployed();
 
   await share.mint(distributor.address, totalBalance.toString());
-  console.log(`Deposited ${INITIAL_BAS_FOR_DAI_BAC} BAS to InitialShareDistributor.`);
+  console.log(
+    `Deposited ${INITIAL_EBS_FOR_WBTC_EBTC} BAS to InitialShareDistributor.`
+  );
 
-  console.log(`Setting distributor to InitialShareDistributor (${distributor.address})`);
-  await lpPoolDAIBAC.deployed().then(pool => pool.setRewardDistribution(distributor.address));
-  await lpPoolDAIBAS.deployed().then(pool => pool.setRewardDistribution(distributor.address));
+  console.log(
+    `Setting distributor to InitialShareDistributor (${distributor.address})`
+  );
+  await lpPoolWBTCEBTC
+    .deployed()
+    .then((pool) => pool.setRewardDistribution(distributor.address));
+  await lpPoolWBTCEBS
+    .deployed()
+    .then((pool) => pool.setRewardDistribution(distributor.address));
 
   await distributor.distribute();
 }

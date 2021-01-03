@@ -28,8 +28,6 @@ export default {
     enabled: true,
   },
   etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-    apiKey: '<api-key>',
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };

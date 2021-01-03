@@ -36,6 +36,7 @@ contract Treasury is ContractGuard, Epoch {
 
     // ========== CORE
     address public fund;
+    address public devFund;
     address public cash;
     address public bond;
     address public share;
@@ -49,7 +50,10 @@ contract Treasury is ContractGuard, Epoch {
     uint256 public cashPriceCeiling;
     uint256 public bondDepletionFloor;
     uint256 private accumulatedSeigniorage = 0;
-    uint256 public fundAllocationRate = 2; // %
+    uint256 public fundAllocationRate = 10; // 10 / 1000 = 1 %
+    uint256 public devFundAllocationRate = 10; // 10 / 1000 = 1%
+    uint256 public constant FUND_RATE_DENOMINATOR = 1000;
+    uint256 public constant WBTC_PRICE_PRECISION = 1e8;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -61,6 +65,7 @@ contract Treasury is ContractGuard, Epoch {
         address _seigniorageOracle,
         address _boardroom,
         address _fund,
+        address _devFund,
         uint256 _startTime
     ) public Epoch(1 days, _startTime, 0) {
         cash = _cash;
@@ -71,8 +76,9 @@ contract Treasury is ContractGuard, Epoch {
 
         boardroom = _boardroom;
         fund = _fund;
+        devFund = _devFund;
 
-        cashPriceOne = 10**18;
+        cashPriceOne = 10**8;   // WBTC only has 8 decimals
         cashPriceCeiling = uint256(105).mul(cashPriceOne).div(10**2);
 
         bondDepletionFloor = uint256(1000).mul(cashPriceOne);
@@ -159,6 +165,16 @@ contract Treasury is ContractGuard, Epoch {
         emit Migration(target);
     }
 
+    function setDevFund(address newDevFund) public onlyOperator {
+       devFund = newDevFund;
+       emit DevFundChanged(msg.sender, newDevFund);
+    }
+
+    function setDevAllocationRate(uint256 rate) public onlyOperator {
+        devFundAllocationRate = rate;
+        emit DevFundRateChanged(msg.sender, rate);
+    }
+
     function setFund(address newFund) public onlyOperator {
         fund = newFund;
         emit ContributionPoolChanged(msg.sender, newFund);
@@ -195,7 +211,7 @@ contract Treasury is ContractGuard, Epoch {
         uint256 bondPrice = cashPrice;
 
         IBasisAsset(cash).burnFrom(msg.sender, amount);
-        IBasisAsset(bond).mint(msg.sender, amount.mul(1e18).div(bondPrice));
+        IBasisAsset(bond).mint(msg.sender, amount.mul(WBTC_PRICE_PRECISION).div(bondPrice));
         _updateCashPrice();
 
         emit BoughtBonds(msg.sender, amount);
@@ -251,11 +267,18 @@ contract Treasury is ContractGuard, Epoch {
             accumulatedSeigniorage
         );
         uint256 percentage = cashPrice.sub(cashPriceOne);
-        uint256 seigniorage = cashSupply.mul(percentage).div(1e18);
+        uint256 seigniorage = cashSupply.mul(percentage).div(WBTC_PRICE_PRECISION);
         IBasisAsset(cash).mint(address(this), seigniorage);
 
+        // ======================== DevFund
+        uint256 devFundReserve = seigniorage.mul(devFundAllocationRate).div(FUND_RATE_DENOMINATOR);
+        if (devFundReserve > 0) {
+            IERC20(cash).transfer(devFund, devFundReserve);
+            emit DevPoolFunded(now, devFundReserve);
+        }
+
         // ======================== BIP-3
-        uint256 fundReserve = seigniorage.mul(fundAllocationRate).div(100);
+        uint256 fundReserve = seigniorage.mul(fundAllocationRate).div(FUND_RATE_DENOMINATOR);
         if (fundReserve > 0) {
             IERC20(cash).safeApprove(fund, fundReserve);
             ISimpleERCFund(fund).deposit(
@@ -266,7 +289,8 @@ contract Treasury is ContractGuard, Epoch {
             emit ContributionPoolFunded(now, fundReserve);
         }
 
-        seigniorage = seigniorage.sub(fundReserve);
+        uint256 reservedFunds = devFundReserve.add(fundReserve);
+        seigniorage = seigniorage.sub(reservedFunds);
 
         // ======================== BIP-4
         uint256 treasuryReserve = Math.min(
@@ -297,6 +321,11 @@ contract Treasury is ContractGuard, Epoch {
         address indexed operator,
         uint256 newRate
     );
+    event DevFundChanged(address indexed operator, address newDevFund);
+    event DevFundRateChanged(
+        address indexed operator,
+        uint256 newRate
+    );
 
     // CORE
     event RedeemedBonds(address indexed from, uint256 amount);
@@ -304,4 +333,5 @@ contract Treasury is ContractGuard, Epoch {
     event TreasuryFunded(uint256 timestamp, uint256 seigniorage);
     event BoardroomFunded(uint256 timestamp, uint256 seigniorage);
     event ContributionPoolFunded(uint256 timestamp, uint256 seigniorage);
+    event DevPoolFunded(uint256 timestamp, uint256 seigniorage);
 }

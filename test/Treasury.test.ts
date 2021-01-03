@@ -6,7 +6,6 @@ import {
   ContractFactory,
   BigNumber,
   utils,
-  BigNumberish,
 } from 'ethers';
 import { Provider } from '@ethersproject/providers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
@@ -17,6 +16,7 @@ chai.use(solidity);
 
 const DAY = 86400;
 const ETH = utils.parseEther('1');
+const WBTC = BigNumber.from('100000000'); // 10 ** 8
 const ZERO = BigNumber.from(0);
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 const INITIAL_BAC_AMOUNT = utils.parseEther('50000');
@@ -68,6 +68,7 @@ describe('Treasury', () => {
   let treasury: Contract;
   let boardroom: Contract;
   let fund: Contract;
+  let devFund: Contract;
 
   let startTime: BigNumber;
 
@@ -78,6 +79,7 @@ describe('Treasury', () => {
     oracle = await MockOracle.connect(operator).deploy();
     boardroom = await MockBoardroom.connect(operator).deploy(cash.address);
     fund = await SimpleFund.connect(operator).deploy();
+    devFund = await SimpleFund.connect(operator).deploy();
 
     startTime = BigNumber.from(await latestBlocktime(provider)).add(DAY);
     treasury = await Treasury.connect(operator).deploy(
@@ -88,6 +90,7 @@ describe('Treasury', () => {
       oracle.address,
       boardroom.address,
       fund.address,
+      devFund.address,
       startTime
     );
     await fund.connect(operator).transferOperator(treasury.address);
@@ -105,6 +108,7 @@ describe('Treasury', () => {
         oracle.address,
         boardroom.address,
         fund.address,
+        devFund.address,
         await latestBlocktime(provider)
       );
 
@@ -229,20 +233,28 @@ describe('Treasury', () => {
         });
 
         it('should funded correctly', async () => {
-          const cashPrice = ETH.mul(210).div(100);
+          const fundRateDenominator = 1000;
+          const cashPrice = WBTC.mul(210).div(100);
           await oracle.setPrice(cashPrice);
 
           // calculate with circulating supply
           const treasuryHoldings = await treasury.getReserve();
           const cashSupply = (await cash.totalSupply()).sub(treasuryHoldings);
           const expectedSeigniorage = cashSupply
-            .mul(cashPrice.sub(ETH))
-            .div(ETH);
-
+            .mul(cashPrice.sub(WBTC))
+            .div(WBTC);
           // get all expected reserve
+          const expectedDevFundReserve = expectedSeigniorage
+            .mul(await treasury.devFundAllocationRate())
+            .div(fundRateDenominator);
+
           const expectedFundReserve = expectedSeigniorage
             .mul(await treasury.fundAllocationRate())
-            .div(100);
+            .div(fundRateDenominator);
+
+          const expectedReservedFunds = expectedDevFundReserve.add(
+            expectedFundReserve
+          );
 
           const expectedTreasuryReserve = bigmin(
             expectedSeigniorage.sub(expectedFundReserve),
@@ -250,10 +262,19 @@ describe('Treasury', () => {
           );
 
           const expectedBoardroomReserve = expectedSeigniorage
-            .sub(expectedFundReserve)
+            .sub(expectedReservedFunds)
             .sub(expectedTreasuryReserve);
 
           const allocationResult = await treasury.allocateSeigniorage();
+
+          if (expectedDevFundReserve.gt(ZERO)) {
+            await expect(new Promise((resolve) => resolve(allocationResult)))
+              .to.emit(treasury, 'DevPoolFunded')
+              .withArgs(
+                await latestBlocktime(provider),
+                expectedDevFundReserve
+              );
+          }
 
           if (expectedFundReserve.gt(ZERO)) {
             await expect(new Promise((resolve) => resolve(allocationResult)))
@@ -279,6 +300,9 @@ describe('Treasury', () => {
               );
           }
 
+          expect(await cash.balanceOf(devFund.address)).to.eq(
+            expectedDevFundReserve
+          );
           expect(await cash.balanceOf(fund.address)).to.eq(expectedFundReserve);
           expect(await treasury.getReserve()).to.eq(expectedTreasuryReserve);
           expect(await cash.balanceOf(boardroom.address)).to.eq(
@@ -287,7 +311,7 @@ describe('Treasury', () => {
         });
 
         it('should funded even fails to call update function in oracle', async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setRevert(true);
           await oracle.setPrice(cashPrice);
 
@@ -314,7 +338,7 @@ describe('Treasury', () => {
               (await latestBlocktime(provider))
           );
 
-          const cashPrice2 = ETH.mul(104).div(100);
+          const cashPrice2 = WBTC.mul(104).div(100);
           await oracle.setPrice(cashPrice2);
 
           await treasury.allocateSeigniorage();
@@ -324,7 +348,7 @@ describe('Treasury', () => {
 
         describe('should fail', () => {
           it('if treasury is not the operator of core contract', async () => {
-            const cashPrice = ETH.mul(106).div(100);
+            const cashPrice = WBTC.mul(106).div(100);
             await oracle.setPrice(cashPrice);
 
             for await (const target of [cash, bond, share, boardroom]) {
@@ -336,7 +360,7 @@ describe('Treasury', () => {
           });
 
           it('if seigniorage already allocated in this epoch', async () => {
-            const cashPrice = ETH.mul(106).div(100);
+            const cashPrice = WBTC.mul(106).div(100);
             await oracle.setPrice(cashPrice);
             await treasury.allocateSeigniorage();
             await expect(treasury.allocateSeigniorage()).to.revertedWith(
@@ -397,7 +421,7 @@ describe('Treasury', () => {
 
       describe('#buyBonds', () => {
         it('should work if cash price below $1', async () => {
-          const cashPrice = ETH.mul(99).div(100); // $0.99
+          const cashPrice = WBTC.mul(99).div(100); // $0.99
           await oracle.setPrice(cashPrice);
           await cash.connect(operator).transfer(ant.address, ETH);
           await cash.connect(ant).approve(treasury.address, ETH);
@@ -408,12 +432,12 @@ describe('Treasury', () => {
 
           expect(await cash.balanceOf(ant.address)).to.eq(ZERO);
           expect(await bond.balanceOf(ant.address)).to.eq(
-            ETH.mul(ETH).div(cashPrice)
+            ETH.mul(WBTC).div(cashPrice)
           );
         });
 
         it('should fail if cash price over $1', async () => {
-          const cashPrice = ETH.mul(101).div(100); // $1.01
+          const cashPrice = WBTC.mul(101).div(100); // $1.01
           await oracle.setPrice(cashPrice);
           await cash.connect(operator).transfer(ant.address, ETH);
           await cash.connect(ant).approve(treasury.address, ETH);
@@ -426,7 +450,7 @@ describe('Treasury', () => {
         });
 
         it('should fail if price changed', async () => {
-          const cashPrice = ETH.mul(99).div(100); // $0.99
+          const cashPrice = WBTC.mul(99).div(100); // $0.99
           await oracle.setPrice(cashPrice);
           await cash.connect(operator).transfer(ant.address, ETH);
           await cash.connect(ant).approve(treasury.address, ETH);
@@ -437,7 +461,7 @@ describe('Treasury', () => {
         });
 
         it('should fail if purchase bonds with zero amount', async () => {
-          const cashPrice = ETH.mul(99).div(100); // $0.99
+          const cashPrice = WBTC.mul(99).div(100); // $0.99
           await oracle.setPrice(cashPrice);
 
           await expect(
@@ -447,7 +471,7 @@ describe('Treasury', () => {
       });
       describe('#redeemBonds', () => {
         beforeEach('allocate seigniorage to treasury', async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setPrice(cashPrice);
           await treasury.allocateSeigniorage();
           await advanceTimeAndBlock(
@@ -458,7 +482,7 @@ describe('Treasury', () => {
         });
 
         it('should work if cash price exceeds $1.05', async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setPrice(cashPrice);
 
           await bond.connect(operator).transfer(ant.address, ETH);
@@ -472,7 +496,7 @@ describe('Treasury', () => {
         });
 
         it("should drain over seigniorage and even contract's budget", async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setPrice(cashPrice);
 
           await cash.connect(operator).transfer(treasury.address, ETH); // $1002
@@ -487,7 +511,7 @@ describe('Treasury', () => {
         });
 
         it('should fail if price changed', async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setPrice(cashPrice);
 
           await bond.connect(operator).transfer(ant.address, ETH);
@@ -498,7 +522,7 @@ describe('Treasury', () => {
         });
 
         it('should fail if redeem bonds with zero amount', async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setPrice(cashPrice);
 
           await expect(
@@ -507,7 +531,7 @@ describe('Treasury', () => {
         });
 
         it('should fail if cash price is below $1+ε', async () => {
-          const cashPrice = ETH.mul(104).div(100);
+          const cashPrice = WBTC.mul(104).div(100);
           await oracle.setPrice(cashPrice);
 
           await bond.connect(operator).transfer(ant.address, ETH);
@@ -520,7 +544,7 @@ describe('Treasury', () => {
         });
 
         it("should fail if redeem bonds over contract's budget", async () => {
-          const cashPrice = ETH.mul(106).div(100);
+          const cashPrice = WBTC.mul(106).div(100);
           await oracle.setPrice(cashPrice);
 
           const treasuryBalance = await cash.balanceOf(treasury.address);
