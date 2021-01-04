@@ -83,7 +83,8 @@ async function main() {
   const oldBoardroomBalance = await ebtc.balanceOf(boardroom.address);
 
   console.log(`\n===== Update Oracle =====`);
-  await oracle.connect(operator).update();
+  tx = await oracle.connect(operator).update();
+  await wait(ethers, tx.hash, 'oracle.update');
   console.log(
     `Current EBTC TWAP: ${await treasury.getSeigniorageOraclePrice()}`
   );
@@ -93,7 +94,6 @@ async function main() {
   );
   try {
     tx = await treasury.connect(operator).allocateSeigniorage(override);
-    await wait(ethers, tx.hash, 'oracle.update');
   } catch (e) {
     throw new Error(`Failed to allocate seigniorage. Error: ${e}`);
   }
