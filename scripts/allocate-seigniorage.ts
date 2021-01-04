@@ -1,5 +1,5 @@
 import { network, ethers } from 'hardhat';
-import Oracle from '../build/artifacts/contracts/Oracle.sol/Oracle.json';
+import Treasury from '../build/artifacts/contracts/Treasury.sol/Treasury.json';
 
 import { wait } from './utils';
 
@@ -25,18 +25,16 @@ async function main() {
   const override = { gasPrice };
 
   const addresses = require(`../deployments/addresses.${network.name}.json`);
-  const oracleAddress =
-    process.env.FOR_SEINIORAGE === 'true'
-      ? addresses.seigniorageOracle
-      : addresses.bondOracle;
-  const oracle = await ethers.getContractAt(Oracle.abi, oracleAddress);
+  const treasury = await ethers.getContractAt(Treasury.abi, addresses.treasury);
 
-  console.log(`Updating oracle at ${oracleAddress} ...`);
+  console.log(
+    `Calling allocateSeigniorage on treasury at ${addresses.treasury} ...`
+  );
   try {
-    const tx = await oracle.connect(operator).update(override);
+    const tx = await treasury.connect(operator).allocateSeigniorage(override);
     await wait(ethers, tx.hash, `oracle.update`);
   } catch (e) {
-    throw new Error(`Failed to update oracle. Error: ${e}`);
+    throw new Error(`Failed to allocate seigniorage. Error: ${e}`);
   }
 }
 
