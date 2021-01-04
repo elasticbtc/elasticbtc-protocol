@@ -1,6 +1,6 @@
 const knownContracts = require('./known-contracts');
 const { POOL_START_DATE } = require('./pools');
-const { readAddresses, writeAddresses } = require('./util');
+const { readAddresses, writeAddresses } = require('./utils');
 
 const Cash = artifacts.require('Cash');
 const Share = artifacts.require('Share');

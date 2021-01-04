@@ -1,6 +1,6 @@
 const { POOL_START_DATE } = require('./pools');
 const knownContracts = require('./known-contracts');
-const { writeAddresses } = require('./util');
+const { writeAddresses } = require('./utils');
 
 const IERC20 = artifacts.require('IERC20');
 const Cash = artifacts.require('Cash');
@@ -48,12 +48,8 @@ async function migration(deployer, network, accounts) {
   // 2. provide liquidity to BAC-DAI and BAS-DAI pair
   // if you don't provide liquidity to BAC-DAI and BAS-DAI pair after step 1 and before step 3,
   //  creating Oracle will fail with NO_RESERVES error.
-  const wbtcUnit = web3.utils
-    .toBN(10 ** 8 / TEN_THOUNSAND)
-    .toString();
-  const unit = web3.utils
-    .toBN(10 ** 18 / TEN_THOUNSAND)
-    .toString();
+  const wbtcUnit = web3.utils.toBN(10 ** 8 / TEN_THOUNSAND).toString();
+  const unit = web3.utils.toBN(10 ** 18 / TEN_THOUNSAND).toString();
   const max = web3.utils
     .toBN(10 ** 18)
     .muln(10000)

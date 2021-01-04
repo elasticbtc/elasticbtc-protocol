@@ -1,4 +1,4 @@
-const { readAddresses, writeAddresses } = require('./util');
+const { readAddresses, writeAddresses } = require('./utils');
 
 const Boardroom = artifacts.require('Boardroom');
 const Treasury = artifacts.require('Treasury');
