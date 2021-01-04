@@ -148,6 +148,7 @@ async function migration(deployer, network, accounts) {
     treasury: Treasury.address,
     communityFund: communityFund.address,
     devFund: devFund.address,
+    wbtc: wbtc.address,
     uniswapV2lpTokens: {
       WBTCEBTCLP: wBTCEBTCLP,
       WBTCEBSLP: wBTCEBSLP,

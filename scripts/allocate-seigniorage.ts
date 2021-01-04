@@ -35,7 +35,7 @@ async function main() {
   );
   try {
     const tx = await treasury.connect(operator).allocateSeigniorage(override);
-    await wait(ethers, tx.hash, `oracle.update`);
+    await wait(ethers, tx.hash, `treasury.allocateSeigniorage`);
   } catch (e) {
     throw new Error(`Failed to allocate seigniorage. Error: ${e}`);
   }
