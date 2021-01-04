@@ -8,6 +8,7 @@ chai.use(solidity);
 
 describe('Tokens', () => {
   const ETH = utils.parseEther('1');
+  const TEN_THOUNSAND = 10000;
   const ZERO = BigNumber.from(0);
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
@@ -62,60 +63,62 @@ describe('Tokens', () => {
 
   describe('Cash', () => {
     let token: Contract;
+    const INITIAL_AMOUNT = ETH.div(TEN_THOUNSAND)
 
     before('deploy token', async () => {
       token = await Cash.connect(operator).deploy();
     });
 
     it('mint', async () => {
-      await expect(token.connect(operator).mint(operator.address, ETH))
+      await expect(token.connect(operator).mint(operator.address, INITIAL_AMOUNT))
         .to.emit(token, 'Transfer')
-        .withArgs(ZERO_ADDR, operator.address, ETH);
-      expect(await token.balanceOf(operator.address)).to.eq(ETH.mul(2));
+        .withArgs(ZERO_ADDR, operator.address, INITIAL_AMOUNT);
+      expect(await token.balanceOf(operator.address)).to.eq(INITIAL_AMOUNT.mul(2));
     });
 
     it('burn', async () => {
-      await expect(token.connect(operator).burn(ETH))
+      await expect(token.connect(operator).burn(INITIAL_AMOUNT))
         .to.emit(token, 'Transfer')
-        .withArgs(operator.address, ZERO_ADDR, ETH);
-      expect(await token.balanceOf(operator.address)).to.eq(ETH);
+        .withArgs(operator.address, ZERO_ADDR, INITIAL_AMOUNT);
+      expect(await token.balanceOf(operator.address)).to.eq(INITIAL_AMOUNT);
     });
 
     it('burnFrom', async () => {
-      await expect(token.connect(operator).approve(operator.address, ETH));
-      await expect(token.connect(operator).burnFrom(operator.address, ETH))
+      await expect(token.connect(operator).approve(operator.address, INITIAL_AMOUNT));
+      await expect(token.connect(operator).burnFrom(operator.address, INITIAL_AMOUNT))
         .to.emit(token, 'Transfer')
-        .withArgs(operator.address, ZERO_ADDR, ETH);
+        .withArgs(operator.address, ZERO_ADDR, INITIAL_AMOUNT);
       expect(await token.balanceOf(operator.address)).to.eq(ZERO);
     });
   });
 
   describe('Share', () => {
     let token: Contract;
+    const INITIAL_AMOUNT = ETH.div(TEN_THOUNSAND)
 
     before('deploy token', async () => {
       token = await Share.connect(operator).deploy();
     });
 
     it('mint', async () => {
-      await expect(token.connect(operator).mint(operator.address, ETH))
+      await expect(token.connect(operator).mint(operator.address, INITIAL_AMOUNT))
         .to.emit(token, 'Transfer')
-        .withArgs(ZERO_ADDR, operator.address, ETH);
-      expect(await token.balanceOf(operator.address)).to.eq(ETH.mul(2));
+        .withArgs(ZERO_ADDR, operator.address, INITIAL_AMOUNT);
+      expect(await token.balanceOf(operator.address)).to.eq(INITIAL_AMOUNT.mul(2));
     });
 
     it('burn', async () => {
-      await expect(token.connect(operator).burn(ETH))
+      await expect(token.connect(operator).burn(INITIAL_AMOUNT))
         .to.emit(token, 'Transfer')
-        .withArgs(operator.address, ZERO_ADDR, ETH);
-      expect(await token.balanceOf(operator.address)).to.eq(ETH);
+        .withArgs(operator.address, ZERO_ADDR, INITIAL_AMOUNT);
+      expect(await token.balanceOf(operator.address)).to.eq(INITIAL_AMOUNT);
     });
 
     it('burnFrom', async () => {
-      await expect(token.connect(operator).approve(operator.address, ETH));
-      await expect(token.connect(operator).burnFrom(operator.address, ETH))
+      await expect(token.connect(operator).approve(operator.address, INITIAL_AMOUNT));
+      await expect(token.connect(operator).burnFrom(operator.address, INITIAL_AMOUNT))
         .to.emit(token, 'Transfer')
-        .withArgs(operator.address, ZERO_ADDR, ETH);
+        .withArgs(operator.address, ZERO_ADDR, INITIAL_AMOUNT);
       expect(await token.balanceOf(operator.address)).to.eq(ZERO);
     });
   });

@@ -20,6 +20,8 @@ const MINUTE = 60;
 const HOUR = 60 * MINUTE;
 const DAY = 86400;
 
+const TEN_THOUNSAND = 10000;
+
 async function migration(deployer, network, accounts) {
   let uniswap, uniswapRouter;
   if (network === 'development') {
@@ -46,8 +48,12 @@ async function migration(deployer, network, accounts) {
   // 2. provide liquidity to BAC-DAI and BAS-DAI pair
   // if you don't provide liquidity to BAC-DAI and BAS-DAI pair after step 1 and before step 3,
   //  creating Oracle will fail with NO_RESERVES error.
-  const wbtcUnit = web3.utils.toBN(10 ** 8).toString();
-  const unit = web3.utils.toBN(10 ** 18).toString();
+  const wbtcUnit = web3.utils
+    .toBN(10 ** 8 / TEN_THOUNSAND)
+    .toString();
+  const unit = web3.utils
+    .toBN(10 ** 18 / TEN_THOUNSAND)
+    .toString();
   const max = web3.utils
     .toBN(10 ** 18)
     .muln(10000)

@@ -8,9 +8,10 @@ contract Cash is ERC20Burnable, Operator {
      * @notice Constructs the Basis Cash ERC-20 contract.
      */
     constructor() public ERC20('Elastic BTC', 'EBTC') {
-        // Mints 1 Basis Cash to contract creator for initial Uniswap oracle deployment.
+        // Mints 0.0001 Basis Cash to contract creator for initial Uniswap oracle deployment.
         // Will be burned after oracle deployment
-        _mint(msg.sender, 1 * 10**18);
+        uint256 one = 1e18;
+        _mint(msg.sender, one.div(10000));
     }
 
     //    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
