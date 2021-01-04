@@ -22,3 +22,8 @@ export async function wait(
   }
   await ethers.provider.waitForTransaction(hash, confirmation);
 }
+
+export function deadline() {
+  // 30 minutes
+  return Math.floor(new Date().getTime() / 1000) + 1800;
+}
