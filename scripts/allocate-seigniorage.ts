@@ -28,6 +28,9 @@ async function main() {
   const treasury = await ethers.getContractAt(Treasury.abi, addresses.treasury);
 
   console.log(
+    `Current EBTC TWAP: ${await treasury.getSeigniorageOraclePrice()}`
+  );
+  console.log(
     `Calling allocateSeigniorage on treasury at ${addresses.treasury} ...`
   );
   try {

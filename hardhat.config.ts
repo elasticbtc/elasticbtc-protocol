@@ -5,7 +5,7 @@ import 'solidity-coverage';
 
 const mnemonic = process.env.MNEMONIC
   ? process.env.MNEMONIC.toString().trim()
-  : null;
+  : "";
 
 export default {
   default: 'hardhat',

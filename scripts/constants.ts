@@ -1,0 +1,1 @@
+export const WBTC_PRICE_PRECISION = "100000000"

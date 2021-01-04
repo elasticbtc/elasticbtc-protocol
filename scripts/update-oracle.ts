@@ -16,6 +16,7 @@ async function main() {
     network.name = 'development';
   }
 
+  const ETH = ethers.utils.parseEther('1');
   const { provider } = ethers;
   const [operator] = await ethers.getSigners();
 
@@ -31,10 +32,16 @@ async function main() {
       : addresses.bondOracle;
   const oracle = await ethers.getContractAt(Oracle.abi, oracleAddress);
 
+  console.log(
+    `Current EBTC TWAP: ${await oracle.consult(addresses.cash, ETH)}`
+  );
   console.log(`Updating oracle at ${oracleAddress} ...`);
   try {
     const tx = await oracle.connect(operator).update(override);
     await wait(ethers, tx.hash, `oracle.update`);
+    console.log(
+      `Updated EBTC TWAP: ${await oracle.consult(addresses.cash, ETH)}`
+    );
   } catch (e) {
     throw new Error(`Failed to update oracle. Error: ${e}`);
   }
