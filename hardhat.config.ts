@@ -3,10 +3,6 @@ import '@nomiclabs/hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
-const mnemonic = process.env.MNEMONIC
-  ? process.env.MNEMONIC.toString().trim()
-  : "";
-
 export default {
   default: 'hardhat',
   networks: {
@@ -14,7 +10,9 @@ export default {
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts: {
-        mnemonic: mnemonic,
+        mnemonic: process.env.KOVAN_MNEMONIC
+          ? process.env.KOVAN_MNEMONIC.toString().trim()
+          : '',
       },
     },
   },
