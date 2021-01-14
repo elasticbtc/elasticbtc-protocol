@@ -232,7 +232,7 @@ contract Treasury is ContractGuard, Epoch {
             uint256 percentage = cashPriceOne.sub(cashPrice);
             uint256 bondSupply = IERC20(bond).totalSupply();
 
-            bondCap = circulatingSupply().mul(percentage).div(1e18);
+            bondCap = circulatingSupply().mul(percentage).div(WBTC_PRICE_PRECISION);
             bondCap = bondCap.sub(Math.min(bondCap, bondSupply));
 
             lastBondOracleEpoch = currentEpoch;
@@ -266,7 +266,7 @@ contract Treasury is ContractGuard, Epoch {
         );
         _updateConversionLimit(cashPrice);
 
-        amount = Math.min(amount, bondCap.mul(cashPrice).div(1e18));
+        amount = Math.min(amount, bondCap.mul(cashPrice).div(WBTC_PRICE_PRECISION));
         require(amount > 0, 'Treasury: amount exceeds bond cap');
 
         IBasisAsset(cash).burnFrom(msg.sender, amount);

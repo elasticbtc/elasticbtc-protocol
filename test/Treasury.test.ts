@@ -69,7 +69,7 @@ describe('Treasury', () => {
     bond = await Bond.connect(operator).deploy();
     share = await Share.connect(operator).deploy();
     curve = await MockCurve.connect(operator).deploy(
-      utils.parseEther('1.05'),
+      WBTC.mul('105').div('100'),
       0,
       0,
       0,
@@ -472,7 +472,7 @@ describe('Treasury', () => {
           await cash.connect(ant).approve(treasury.address, ETH);
 
           await expect(
-            treasury.connect(ant).buyBonds(ETH, ETH.mul(98).div(100))
+            treasury.connect(ant).buyBonds(ETH, WBTC.mul(98).div(100))
           ).to.revertedWith('Treasury: cash price moved');
         });
 
@@ -486,7 +486,7 @@ describe('Treasury', () => {
         });
 
         it('should update bond cap', async () => {
-          const cashPrice = ETH.mul(99).div(100);
+          const cashPrice = WBTC.mul(99).div(100);
           await oracle.setPrice(cashPrice);
           await oracle.setEpoch(1);
 
@@ -500,25 +500,25 @@ describe('Treasury', () => {
           await treasury.connect(ant).buyBonds(ETH, cashPrice);
 
           const bondCap = circulatingSupply
-            .mul(ETH.sub(cashPrice))
-            .div(ETH)
+            .mul(WBTC.sub(cashPrice))
+            .div(WBTC)
             .sub(bondSupply);
           expect(await treasury.bondCap()).to.eq(bondCap);
         });
 
         it('should not purchase over bond cap', async () => {
-          const cashPrice = ETH.mul(99).div(100);
+          const cashPrice = WBTC.mul(99).div(100);
           await oracle.setPrice(cashPrice);
           await oracle.setEpoch(1);
 
           const circulatingSupply = await treasury.circulatingSupply();
           const bondSupply = await bond.totalSupply();
           const bondCap = circulatingSupply
-            .mul(ETH.sub(cashPrice))
-            .div(ETH)
+            .mul(WBTC.sub(cashPrice))
+            .div(WBTC)
             .sub(bondSupply);
 
-          const maxCashAmount = bondCap.mul(cashPrice).div(ETH);
+          const maxCashAmount = bondCap.mul(cashPrice).div(WBTC);
 
           await cash
             .connect(operator)
@@ -532,12 +532,12 @@ describe('Treasury', () => {
           // refund
           expect(await cash.balanceOf(ant.address)).to.eq(1);
           expect(await bond.balanceOf(ant.address)).to.eq(
-            maxCashAmount.mul(ETH).div(cashPrice)
+            maxCashAmount.mul(WBTC).div(cashPrice)
           );
         });
 
         it('should not update conversion limit if storedEpoch = lastEpoch', async () => {
-          const cashPrice = ETH.mul(99).div(100);
+          const cashPrice = WBTC.mul(99).div(100);
           await oracle.setPrice(cashPrice);
           await oracle.setEpoch(1);
 

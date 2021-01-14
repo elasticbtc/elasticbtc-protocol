@@ -64,9 +64,9 @@ contract LinearThreshold is Operator, Curve {
         }
 
         uint256 slope =
-            maxCeiling.sub(minCeiling).mul(1e18).div(maxSupply.sub(minSupply));
+            maxCeiling.sub(minCeiling).mul(1e8).div(maxSupply.sub(minSupply));
         uint256 ceiling =
-            maxCeiling.sub(slope.mul(_supply.sub(minSupply)).div(1e18));
+            maxCeiling.sub(slope.mul(_supply.sub(minSupply)).div(1e8));
 
         return ceiling;
     }
