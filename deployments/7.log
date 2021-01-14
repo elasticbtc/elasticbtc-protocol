@@ -1,0 +1,44 @@
+Gas Price: 99.0 gwei
+Deployments
+{
+  "Cash": "0x3449FC1Cd036255BA1EB19d65fF4BA2b8903A69a",
+  "Bond": "0xC36824905dfF2eAAEE7EcC09fCC63abc0af5Abc5",
+  "Share": "0xa7ED29B253D8B4E3109ce07c80fc570f81B63696",
+  "Timelock": "0xD98Bc19FFc98E9009146524c8bD835F1BC5d0E6a",
+  "BondOracle": "0xE4EFD87ad34360932E5325D77A0a6e39147DEbFa",
+  "SeigniorageOracle": "0x6a86184349Aab530a0cb3e978F3f812E3030fF44",
+  "LinearCurve": "0xCdBae6dE88C7525369D6826AE1cDCaB415120B11",
+  "SigmoidCurve": "0xa728721394084eA78F10ceBB192323f50407F7f3",
+  "ContributionPool": "0x7B075B3aA2F1143775101986B52E32DA9d98fE22",
+  "Treasury": "0x02957ae53173F58Dc9989C4a09853f9528C877f5",
+  "Boardroom": "0x4B182469337d46E6603ed7e26BA60c56930a342c"
+}
+Admin verified 0x68C3a95B35C45Db5dB67ed83c43305052FAD6e04
+
+===================================================
+
+=> Deploy
+
+Waiting tx 0xb797a31ca4183155dcf04c978ffb9a5daadfef7f5d98f00cd99d54a15d182465. action =
+Deploy new Treasury => 0xf8aCEaAe0Dfb5D917086e052eF257E9DA9d72deA
+
+===================================================
+
+=> RBAC
+
+Waiting tx 0xc6439d527e545a43cfd9ce87ca88e5c0428cae9f9e1f7700b53655ea3bbe0d74. action = treasury.transferOperator
+Waiting tx 0x47d8b0b260bcb3cbf763e9fb607eccc63e91b5d08856f2c508d4ce1d3de160c0. action = treasury.transferOwnership
+
+===================================================
+
+=> Migration
+
+Waiting tx 0x0cd9b7511e8a7e4db3e83c8b1eb85f89afd6792131bd5a0dea3e9aec012cdcfa. action =
+1. timelock.queueTransaction (treasury.migrate) => txHash: 0xcb53d0a22b1c79ee3914fad0d8adb0b2cfa3af447e76ff6c54df2eee517d6e1c
+Tx execution ETA: 1610818143
+Waiting tx 0x94fd76aa5f03b11654a94f6593a6ec595af81cc422c1e771807c01d9a9199d0d. action =
+2. timelock.queueTransaction (boardroom.transferOperator) => txHash: 0x6c2e96e49304f05ce891f6876fd9678ade7ea8f1eda1c4d78ac35aee57c01db0
+Tx execution ETA: 1610818156
+OK!
+
+===================================================
