@@ -33,9 +33,6 @@ module.exports = {
   RenBTC: {
     mainnet: '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d',
   },
-  BADGER: {
-    mainnet: '0x3472A5A71965499acd81997a54BBA8D852C6E53d',
-  },
   SBTC: {
     mainnet: '0xfe18be6b3bd88a2d2a7f928d00292e7a9963cfc6',
   },

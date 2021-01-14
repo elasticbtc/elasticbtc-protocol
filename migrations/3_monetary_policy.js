@@ -12,6 +12,7 @@ const SimpleERCFund = artifacts.require('SimpleERCFund');
 const Oracle = artifacts.require('Oracle');
 const Boardroom = artifacts.require('Boardroom');
 const Treasury = artifacts.require('Treasury');
+const LinearThreshold = artifacts.require('LinearThreshold');
 
 const UniswapV2Factory = artifacts.require('UniswapV2Factory');
 const UniswapV2Router02 = artifacts.require('UniswapV2Router02');
@@ -20,7 +21,12 @@ const MINUTE = 60;
 const HOUR = 60 * MINUTE;
 const DAY = 86400;
 
-const TEN_THOUNSAND = 10000;
+const TEN_THOUSAND = 10000;
+
+const CURVE_MIN_SUPPLY = 0;
+const CURVE_MAX_SUPPLY = 10000;
+const CURVE_MIN_CEILING_CENTS = 101;
+const CURVE_MAX_CEILING_CENTS = 105;
 
 async function migration(deployer, network, accounts) {
   let uniswap, uniswapRouter;
@@ -48,8 +54,8 @@ async function migration(deployer, network, accounts) {
   // 2. provide liquidity to BAC-DAI and BAS-DAI pair
   // if you don't provide liquidity to BAC-DAI and BAS-DAI pair after step 1 and before step 3,
   //  creating Oracle will fail with NO_RESERVES error.
-  const wbtcUnit = web3.utils.toBN(10 ** 8 / TEN_THOUNSAND).toString();
-  const unit = web3.utils.toBN(10 ** 18 / TEN_THOUNSAND).toString();
+  const wbtcUnit = web3.utils.toBN(10 ** 8 / TEN_THOUSAND).toString();
+  const unit = web3.utils.toBN(10 ** 18 / TEN_THOUSAND).toString();
   const max = web3.utils
     .toBN(10 ** 18)
     .muln(10000)
@@ -125,6 +131,15 @@ async function migration(deployer, network, accounts) {
   const communityFund = await SimpleERCFund.new();
   const devFund = await SimpleERCFund.new();
 
+  const ebtcUnit = web3.utils.toBN(10 ** 18);
+  await deployer.deploy(
+    LinearThreshold,
+    ebtcUnit.muln(CURVE_MIN_SUPPLY),
+    ebtcUnit.muln(CURVE_MAX_SUPPLY),
+    ebtcUnit.muln(CURVE_MIN_CEILING_CENTS).divn(10 ** 2),
+    ebtcUnit.muln(CURVE_MAX_CEILING_CENTS).divn(10 ** 2)
+  );
+
   await deployer.deploy(
     Treasury,
     cash.address,
@@ -135,6 +150,7 @@ async function migration(deployer, network, accounts) {
     Boardroom.address,
     communityFund.address,
     devFund.address,
+    LinearThreshold.address,
     startTime
   );
 
@@ -153,6 +169,7 @@ async function migration(deployer, network, accounts) {
       WBTCEBTCLP: wBTCEBTCLP,
       WBTCEBSLP: wBTCEBSLP,
     },
+    linearThreshold: LinearThreshold.address,
   };
 
   if (network === 'development') {

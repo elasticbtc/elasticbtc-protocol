@@ -49,7 +49,8 @@ contract Treasury is ContractGuard, Epoch {
 
     // ========== PARAMS
     uint256 public cashPriceOne;
-    uint256 public constant WBTC_PRICE_PRECISION = 1e8;
+    uint256 public constant WBTC_DECIMALS = 8;
+    uint256 public constant WBTC_PRICE_PRECISION = 10 ** WBTC_DECIMALS;
 
     uint256 public lastBondOracleEpoch = 0;
     uint256 public bondCap = 0;
@@ -84,7 +85,7 @@ contract Treasury is ContractGuard, Epoch {
         fund = _fund;
         devFund = _devFund;
 
-        cashPriceOne = 10**8;
+        cashPriceOne = 10 ** WBTC_DECIMALS;
     }
 
     /* =================== Modifier =================== */

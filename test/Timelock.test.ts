@@ -73,6 +73,7 @@ describe('Timelock', () => {
       boardroom.address,
       ZERO_ADDR,
       ZERO_ADDR,
+      ZERO_ADDR,
       (await latestBlocktime(provider)) + 5 * DAY
     );
 
@@ -133,6 +134,7 @@ describe('Timelock', () => {
         ZERO_ADDR,
         ZERO_ADDR,
         boardroom.address,
+        ZERO_ADDR,
         ZERO_ADDR,
         ZERO_ADDR,
         startTime

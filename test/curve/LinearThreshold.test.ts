@@ -1,8 +1,8 @@
-import chai, { expect } from 'chai';
-import { ethers } from 'hardhat';
-import { solidity } from 'ethereum-waffle';
-import { Contract, ContractFactory, BigNumber, utils } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
+import chai, { expect } from 'chai';
+import { solidity } from 'ethereum-waffle';
+import { BigNumber, Contract, utils } from 'ethers';
+import { ethers } from 'hardhat';
 
 chai.use(solidity);
 

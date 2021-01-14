@@ -15,6 +15,14 @@ export default {
           : '',
       },
     },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts: {
+        mnemonic: process.env.MAINNET_MNEMONIC
+          ? process.env.MAINNET_MNEMONIC.toString().trim()
+          : '',
+      },
+    },
   },
   solidity: {
     version: '0.6.12',

@@ -5,6 +5,7 @@ import { Contract, ContractFactory, BigNumber, utils } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 
 import { advanceTimeAndBlock, latestBlocktime } from './shared/utilities';
+import { parseEther } from 'ethers/lib/utils';
 
 chai.use(solidity);
 
@@ -69,7 +70,7 @@ describe('Treasury', () => {
     bond = await Bond.connect(operator).deploy();
     share = await Share.connect(operator).deploy();
     curve = await MockCurve.connect(operator).deploy(
-      WBTC.mul('105').div('100'),
+      utils.parseEther('1.05'),
       0,
       0,
       0,

@@ -1,9 +1,14 @@
-// https://docs.basis.cash/mechanisms/yield-farming
-const INITIAL_EBTC_FOR_POOLS = 2;
-const INITIAL_EBS_FOR_WBTC_EBTC = 25;
-const INITIAL_EBS_FOR_WBTC_EBS = 8;
+// https://docs.basis.cash/mechanisms/token-distribution
 
-const POOL_START_DATE = Date.parse('2020-11-30T00:00:00Z') / 1000;
+// 2 EBTC in first 5 days distributed to pools
+const INITIAL_EBTC_FOR_POOLS = 2;
+
+// target fully diluted market cap: 100000.0001
+// 1/10th of the supply of basis.cash
+const INITIAL_EBS_FOR_WBTC_EBTC = 75000;
+const INITIAL_EBS_FOR_WBTC_EBS = 25000;
+
+const POOL_START_DATE = Date.parse('2021-01-18T04:00:00Z') / 1000;
 
 const ebtcPools = [
   { contractName: 'EBTCDAIPool', token: 'DAI' },

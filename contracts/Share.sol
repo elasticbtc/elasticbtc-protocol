@@ -5,7 +5,7 @@ import '@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol';
 
 contract Share is ERC20Burnable, Operator {
     constructor() public ERC20('Elastic BTC Share', 'EBS') {
-        // Mints 0.0001 Basis Share to contract creator for initial Uniswap oracle deployment.
+        // Mints 0.0001 Elastic BTC Share to contract creator for initial Uniswap oracle deployment.
         // Will be burned after oracle deployment
         uint256 one = 1e18;
         _mint(msg.sender, one.div(10000));

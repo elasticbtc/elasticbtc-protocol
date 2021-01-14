@@ -7,6 +7,7 @@ const Bond = artifacts.require('Bond');
 const Share = artifacts.require('Share');
 const Timelock = artifacts.require('Timelock');
 const SimpleERCFund = artifacts.require('SimpleERCFund');
+const LinearThreshold = artifacts.require('LinearThreshold');
 
 const DAY = 86400;
 
@@ -19,6 +20,9 @@ module.exports = async (deployer, network, accounts) => {
   const boardroom = await Boardroom.at(deployedAddresses.boardroom);
   const communityFund = await SimpleERCFund.at(deployedAddresses.communityFund);
   const devFund = await SimpleERCFund.at(deployedAddresses.devFund);
+  const linearThreshold = await LinearThreshold.at(
+    deployedAddresses.linearThreshold
+  );
   const timelock = await deployer.deploy(Timelock, accounts[0], 2 * DAY);
   deployedAddresses['timelock'] = timelock.address;
 
@@ -34,6 +38,8 @@ module.exports = async (deployer, network, accounts) => {
   await communityFund.transferOwnership(timelock.address);
   await devFund.transferOperator(timelock.address);
   await devFund.transferOwnership(timelock.address);
+  await linearThreshold.transferOperator(timelock.address);
+  await linearThreshold.transferOwnership(timelock.address);
 
   console.log(
     `Transferred the operator role from the deployer (${accounts[0]}) to Treasury (${Treasury.address})`

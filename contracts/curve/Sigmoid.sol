@@ -96,19 +96,19 @@ contract SigmoidThreshold is Operator, Curve {
         uint256 xa = _supply.sub(minSupply).div(slotWidth);
         uint256 xb = Math.min(xa.add(1), slots.length.sub(1));
 
-        uint256 slope = slots[xa].sub(slots[xb]).mul(1e8).div(slotWidth);
-        uint256 wy = slots[xa].add(slope.mul(slotWidth.mul(xa)).div(1e8));
+        uint256 slope = slots[xa].sub(slots[xb]).mul(1e18).div(slotWidth);
+        uint256 wy = slots[xa].add(slope.mul(slotWidth.mul(xa)).div(1e18));
 
         uint256 percentage = 0;
-        if (wy > slope.mul(_supply).div(1e8)) {
-            percentage = wy.sub(slope.mul(_supply).div(1e8));
+        if (wy > slope.mul(_supply).div(1e18)) {
+            percentage = wy.sub(slope.mul(_supply).div(1e18));
         } else {
-            percentage = slope.mul(_supply).div(1e8).sub(wy);
+            percentage = slope.mul(_supply).div(1e18).sub(wy);
         }
 
         return
             minCeiling.add(
-                maxCeiling.sub(minCeiling).mul(percentage).div(1e8)
+                maxCeiling.sub(minCeiling).mul(percentage).div(1e18)
             );
     }
 }
