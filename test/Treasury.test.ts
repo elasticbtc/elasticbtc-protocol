@@ -70,7 +70,7 @@ describe('Treasury', () => {
     bond = await Bond.connect(operator).deploy();
     share = await Share.connect(operator).deploy();
     curve = await MockCurve.connect(operator).deploy(
-      utils.parseEther('1.05'),
+      WBTC.mul('105').div('100'),
       0,
       0,
       0,

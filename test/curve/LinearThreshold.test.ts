@@ -7,12 +7,11 @@ import { ethers } from 'hardhat';
 chai.use(solidity);
 
 describe('LinearThreshold', () => {
-  const { provider } = ethers;
-
+  const WBTC = BigNumber.from(10).pow(8);
   const MIN_SUPPLY = BigNumber.from(0);
   const MAX_SUPPLY = utils.parseEther('250000000');
-  const MIN_CEILING = utils.parseEther('1.01');
-  const MAX_CEILING = utils.parseEther('1.05');
+  const MIN_CEILING = WBTC.mul('101').div('100');
+  const MAX_CEILING = WBTC.mul('105').div('100');
 
   let operator: SignerWithAddress;
 
